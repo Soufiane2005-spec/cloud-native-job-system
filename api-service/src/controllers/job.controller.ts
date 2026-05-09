@@ -1,31 +1,28 @@
 import { Request, Response } from "express";
 import { jobService } from "../services/job.service";
+import { asyncHandler } from "../middlewares/async-handler";
 
-export const createJob = async (req: Request, res: Response) => {
-  try {
-    const job = await jobService.createJob(req.body);
+export const createJob = asyncHandler(async (req: Request, res: Response) => {
+  const job = await jobService.createJob(req.body);
 
-    return res.status(201).json({
-      message: "Job created successfully",
-      job,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      message: error instanceof Error ? error.message : "Something went wrong",
-    });
+  return res.status(201).json({
+    success: true,
+    message: "Job created successfully",
+    job,
+  });
+});
+
+export const getJobById = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+
+  if (!id) {
+    throw new Error("Job ID is required");
   }
-};
 
-export const getJobById = async (req: Request, res: Response) => {
-  try {
-    const job = await jobService.getJobById(req.params.id);
+  const job = await jobService.getJobById(id);
 
-    return res.status(200).json({
-      job,
-    });
-  } catch (error) {
-    return res.status(404).json({
-      message: error instanceof Error ? error.message : "Job not found",
-    });
-  }
-};
+  return res.status(200).json({
+    success: true,
+    job,
+  });
+});
