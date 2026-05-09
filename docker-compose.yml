@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: cloud-job-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cloud_job_system
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    container_name: cloud-job-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: ./api-service
+    container_name: cloud-job-api
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/cloud_job_system?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+  worker:
+    build:
+      context: ./worker-service
+    container_name: cloud-job-worker
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/cloud_job_system?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
