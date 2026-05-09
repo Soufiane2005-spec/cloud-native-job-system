@@ -1,13 +1,15 @@
 FROM node:20
 
-WORKDIR /app 
+WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install 
+RUN npm install
 
-COPY  . . 
+COPY . .
 
-RUN npx prisma generate 
+RUN npx prisma generate
 
-CMD ["npm","run","dev"]
+RUN npm run build
+
+CMD ["npm", "run", "start"]
