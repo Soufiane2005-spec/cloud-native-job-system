@@ -4,16 +4,17 @@ A production-style cloud-native distributed system that processes user-submitted
 
 This project demonstrates modern backend engineering practices including:
 
-* Microservices architecture
-* Asynchronous job processing
-* Queue-based communication
-* PostgreSQL persistence
-* Redis messaging
-* Background workers
-* Clean architecture
-* Docker containerization
-* Kubernetes orchestration (planned)
-* CI/CD automation (planned)
+- Microservices architecture
+- Asynchronous job processing
+- Queue-based communication
+- PostgreSQL persistence
+- Redis messaging
+- Background workers
+- Clean architecture
+- Docker containerization
+- Docker Compose orchestration
+- Kubernetes orchestration (planned)
+- CI/CD automation (planned)
 
 ---
 
@@ -71,25 +72,26 @@ The architecture is inspired by real-world distributed systems used in scalable 
 
 ## Backend
 
-* Node.js
-* Express.js
-* TypeScript
+- Node.js
+- Express.js
+- TypeScript
 
 ## Database
 
-* PostgreSQL
-* Prisma ORM
+- PostgreSQL
+- Prisma ORM
 
 ## Queue / Messaging
 
-* Redis
-* BullMQ
+- Redis
+- BullMQ
 
 ## DevOps / Infrastructure
 
-* Docker
-* Kubernetes (planned)
-* GitHub Actions (planned)
+- Docker
+- Docker Compose
+- Kubernetes (planned)
+- GitHub Actions (planned)
 
 ---
 
@@ -103,14 +105,16 @@ cloud-job-system/
 │   ├── src/
 │   │   ├── config/
 │   │   ├── controllers/
+│   │   ├── middlewares/
 │   │   ├── queues/
 │   │   ├── repositories/
 │   │   ├── routes/
 │   │   ├── services/
 │   │   ├── types/
+│   │   ├── utils/
 │   │   ├── app.ts
 │   │   └── server.ts
-│   └── package.json
+│   └── Dockerfile
 │
 ├── worker-service/
 │   ├── prisma/
@@ -119,11 +123,12 @@ cloud-job-system/
 │   │   ├── processors/
 │   │   ├── queues/
 │   │   └── worker.ts
-│   └── package.json
+│   └── Dockerfile
 │
 ├── docs/
 │   └── screenshots/
 │
+├── docker-compose.yml
 └── README.md
 ```
 
@@ -135,11 +140,11 @@ cloud-job-system/
 
 The API Service is responsible for:
 
-* Receiving HTTP requests
-* Validating incoming jobs
-* Saving jobs into PostgreSQL
-* Sending jobs to Redis queue
-* Returning job status and results
+- Receiving HTTP requests
+- Validating incoming jobs
+- Saving jobs into PostgreSQL
+- Sending jobs to Redis queue
+- Returning job status and results
 
 ### Main Endpoints
 
@@ -164,6 +169,7 @@ POST /jobs
 
 ```json
 {
+  "success": true,
   "message": "Job created successfully",
   "job": {
     "id": "c609abca-ca88-480a-96bd-ecbf0d6c7aef",
@@ -184,6 +190,7 @@ GET /jobs/:id
 
 ```json
 {
+  "success": true,
   "job": {
     "id": "c609abca-ca88-480a-96bd-ecbf0d6c7aef",
     "status": "COMPLETED",
@@ -202,18 +209,18 @@ GET /jobs/:id
 
 The Worker Service is responsible for:
 
-* Listening to Redis queue
-* Consuming background jobs
-* Processing tasks asynchronously
-* Updating PostgreSQL results
+- Listening to Redis queue
+- Consuming background jobs
+- Processing tasks asynchronously
+- Updating PostgreSQL results
 
 ### Current Processing Logic
 
 The worker currently performs:
 
-* Word count
-* Character count
-* Uppercase transformation
+- Word count
+- Character count
+- Uppercase transformation
 
 ---
 
@@ -275,26 +282,10 @@ Handle database operations.
 
 This separation improves:
 
-* Maintainability
-* Scalability
-* Testing
-* Code organization
-
----
-
-# 🐳 Running Redis with Docker
-
-Start Redis container:
-
-```bash
-docker run --name cloud-job-redis -p 6379:6379 -d redis:7
-```
-
-Check running containers:
-
-```bash
-docker ps
-```
+- Maintainability
+- Scalability
+- Testing
+- Code organization
 
 ---
 
@@ -436,13 +427,57 @@ Worker connected to Redis and ready
 
 ---
 
-# 🧪 API Testing
+# 🐳 Docker Compose Setup
 
-Use:
+The entire distributed system can now run using Docker Compose.
 
-* Postman
-* Thunder Client
-* curl
+## Start Full System
+
+From project root:
+
+```bash
+docker compose up --build
+```
+
+This starts:
+
+- API Service
+- Worker Service
+- PostgreSQL
+- Redis
+
+---
+
+## Verify Running Containers
+
+```bash
+docker ps
+```
+
+Expected containers:
+
+```text
+cloud-job-api
+cloud-job-worker
+cloud-job-postgres
+cloud-job-redis
+```
+
+---
+
+## Apply Prisma Migrations
+
+```bash
+docker exec -it cloud-job-api npx prisma migrate deploy
+```
+
+---
+
+## Test Health Endpoint
+
+```http
+GET http://localhost:3000/health
+```
 
 ---
 
@@ -452,39 +487,59 @@ Use:
 POST http://localhost:3000/jobs
 ```
 
-Body:
+Example request:
 
 ```json
 {
   "type": "TEXT_PROCESSING",
   "payload": {
-    "text": "Cloud native systems are powerful"
+    "text": "Docker compose runs the full system"
   }
 }
 ```
 
 ---
 
-## Get Job Status
+## Get Job Result
 
 ```http
 GET http://localhost:3000/jobs/:id
 ```
 
+Expected lifecycle:
+
+```text
+PENDING → PROCESSING → COMPLETED
+```
+
+---
+
+# 🧪 API Testing
+
+Use:
+
+- Postman
+- Thunder Client
+- curl
+
 ---
 
 # 🔥 Current Features
 
-* REST API
-* PostgreSQL persistence
-* Prisma ORM integration
-* Redis queue integration
-* BullMQ async processing
-* Worker microservice
-* TypeScript backend
-* Clean architecture
-* Queue-based processing
-* Background task execution
+- REST API
+- PostgreSQL persistence
+- Prisma ORM integration
+- Redis queue integration
+- BullMQ async processing
+- Worker microservice
+- TypeScript backend
+- Clean architecture
+- Queue-based processing
+- Background task execution
+- Dockerized microservices
+- Docker Compose orchestration
+- Multi-container architecture
+- Container networking
 
 ---
 
@@ -492,37 +547,35 @@ GET http://localhost:3000/jobs/:id
 
 ## Infrastructure
 
-* Docker Compose
-* Kubernetes deployments
-* Minikube setup
-* CI/CD pipelines
-* GitHub Actions
+- Kubernetes deployments
+- Minikube setup
+- CI/CD pipelines
+- GitHub Actions
 
 ## Reliability
 
-* Retry mechanism
-* Dead-letter queue
-* Graceful shutdown
-* Better error handling
+- Retry mechanism
+- Dead-letter queue
+- Graceful shutdown
+- Better error handling
 
 ## Scalability
 
-* Multiple worker instances
-* Horizontal scaling
-* Load balancing
+- Multiple worker instances
+- Horizontal scaling
+- Load balancing
 
 ## Monitoring
 
-* Logging system
-* Metrics collection
-* Queue monitoring
+- Logging system
+- Metrics collection
+- Queue monitoring
 
 ## Security
 
-* Request validation
-* Authentication
-* Rate limiting
-* Secrets management
+- Authentication
+- Rate limiting
+- Secrets management
 
 ---
 
@@ -536,11 +589,12 @@ docs/screenshots/
 
 Recommended screenshots:
 
-* POST /jobs success
-* GET /jobs result
-* Worker processing logs
-* Redis container running
-* Future Docker/Kubernetes screenshots
+- POST /jobs success
+- GET /jobs result
+- Worker processing logs
+- Redis container running
+- Docker Compose running containers
+- Future Kubernetes deployment screenshots
 
 ---
 
@@ -548,14 +602,18 @@ Recommended screenshots:
 
 This project demonstrates:
 
-* Distributed systems
-* Asynchronous architecture
-* Queue-based communication
-* Background processing
-* Cloud-native backend design
-* Clean architecture patterns
-* Microservices separation
-* Real-world backend workflow
+- Distributed systems
+- Asynchronous architecture
+- Queue-based communication
+- Background processing
+- Cloud-native backend design
+- Clean architecture patterns
+- Microservices separation
+- Real-world backend workflow
+- Docker containerization
+- Multi-container orchestration
+- Container networking
+- Infrastructure reproducibility
 
 ---
 
