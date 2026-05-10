@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata: 
   name : cloud-job-config
+  namespace: cloud-job-system
 data: 
   PORT: "3000"
   REDIS_HOST : "redis-service"
