@@ -1,0 +1,10 @@
+apiVersion: v1 
+kind: ConfigMap
+metadata: 
+  name : cloud-job-config
+data: 
+  PORT: "3000"
+  REDIS_HOST : "redis-service"
+  REDIS_PORT: "6379"
+  POSTGRES_DB: "cloud-job-system"
+  POSTGRES_USER: "postgres"
