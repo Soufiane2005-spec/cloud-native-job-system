@@ -1,6 +1,7 @@
 import { Worker } from "bullmq";
 import { prisma } from "../config/prisma";
 import { processJob } from "../processors/job.processor";
+import { failedJobQueue} from "./failed.queue";
 
 export const jobWorker = new Worker(
   "job-queue",
@@ -36,7 +37,14 @@ jobWorker.on("failed", async (job, error) => {
         error: error.message,
       },
     });
+    await failedJobQueue.add("failed-job",{ 
+      originalJobId: jobId,
+      bullmqJobId: job.id,
+      error: error.message,
+      failedAt: new Date().toISOString(),
+      payload: job.data,
+    });
 
-    console.error(`Job marked as FAILED in database: ${jobId}`);
+    console.error(`Job marked as FAILED and moved to DLQ: ${jobId}`);
   }
 });
