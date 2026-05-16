@@ -19,6 +19,9 @@ export const processJob = async (jobId: string) => {
   });
 
   const text = (job.payload as any).text;
+    if (text === "FAIL_TEST"){
+      throw new Error(" Intentional failure test ");
+    }
 
   const result = {
     wordCount: text.split(" ").length,

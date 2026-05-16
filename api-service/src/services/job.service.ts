@@ -13,7 +13,16 @@ export const jobService = {
 
     await jobQueue.add("process-job", {
       jobId: job.id,
-    });
+    },
+  {
+    attempts: 3,
+    backoff: {
+      type: "exponential",
+      delay: 5000,
+    },
+    removeOnComplete : true,
+    removeOnFail: false,
+  });
 
     return job;
   },
