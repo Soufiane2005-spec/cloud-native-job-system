@@ -17,6 +17,23 @@ spec:
         - name: worker
           image: cloud-job-system-worker:latest
           imagePullPolicy: Never
+
+          livenessProbe:
+            exec:
+              command:
+                - pgrep
+                - node
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          readinessProbe:
+            exec:
+              command:
+                - pgrep
+                - node
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
           env:
             - name: REDIS_HOST
               valueFrom:
