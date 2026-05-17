@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
 import { jobService } from "../services/job.service";
 import { asyncHandler } from "../middlewares/async-handler";
+import { jobsCreatedCounter } from "../config/metrics";
 
 export const createJob = asyncHandler(async (req: Request, res: Response) => {
   const job = await jobService.createJob(req.body);
+
+  jobsCreatedCounter.inc();
 
   return res.status(201).json({
     success: true,
