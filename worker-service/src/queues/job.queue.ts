@@ -1,12 +1,19 @@
 import { Worker } from "bullmq";
 import { prisma } from "../config/prisma";
+import { logger } from "../config/logger";
 import { processJob } from "../processors/job.processor";
-import { failedJobQueue} from "./failed.queue";
+import { failedJobQueue } from "./failed.queue";
 
 export const jobWorker = new Worker(
   "job-queue",
   async (job) => {
-    console.log("Job received from queue:", job.data);
+    logger.info(
+      {
+        bullmqJobId: job.id,
+        jobData: job.data,
+      },
+      "Job received from queue"
+    );
 
     await processJob(job.data.jobId);
   },
@@ -19,11 +26,26 @@ export const jobWorker = new Worker(
 );
 
 jobWorker.on("completed", (job) => {
-  console.log(`Job completed successfully: ${job.id}`);
+  logger.info(
+    {
+      bullmqJobId: job.id,
+      jobId: job.data.jobId,
+    },
+    "Job completed successfully"
+  );
 });
 
 jobWorker.on("failed", async (job, error) => {
-  console.error(`Job failed: ${job?.id}`, error.message);
+  logger.error(
+    {
+      bullmqJobId: job?.id,
+      jobId: job?.data?.jobId,
+      error: error.message,
+      attemptsMade: job?.attemptsMade,
+      maxAttempts: job?.opts.attempts,
+    },
+    "Job processing failed"
+  );
 
   if (!job) return;
 
@@ -37,7 +59,8 @@ jobWorker.on("failed", async (job, error) => {
         error: error.message,
       },
     });
-    await failedJobQueue.add("failed-job",{ 
+
+    await failedJobQueue.add("failed-job", {
       originalJobId: jobId,
       bullmqJobId: job.id,
       error: error.message,
@@ -45,6 +68,14 @@ jobWorker.on("failed", async (job, error) => {
       payload: job.data,
     });
 
-    console.error(`Job marked as FAILED and moved to DLQ: ${jobId}`);
+    logger.error(
+      {
+        jobId,
+        bullmqJobId: job.id,
+        queue: "failed-jobs",
+        error: error.message,
+      },
+      "Job marked as FAILED and moved to DLQ"
+    );
   }
 });

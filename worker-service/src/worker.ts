@@ -1,7 +1,8 @@
 import dotenv from "dotenv";
+import { logger } from "./config/logger";
 
 dotenv.config();
 
 import "./queues/job.queue";
 
-console.log("Worker service is running...");
+logger.info("Worker service is running...");
